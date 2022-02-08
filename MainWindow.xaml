@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ATNC"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="720" Width="1280">
     <Grid>
-
+        <local:Road Width="400" Height="200" HorizontalAlignment="Left"/>
+        <local:Bridge Width="400" Height="300" HorizontalAlignment="Left" Margin="400,0,0,0"/>
+        <local:Road Width="400" Height="200" HorizontalAlignment="Left" Margin="800,0,0,0"/>
     </Grid>
 </Window>
