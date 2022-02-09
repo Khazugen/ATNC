@@ -7,8 +7,10 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="720" Width="1280">
     <Grid>
-        <local:Road Width="400" Height="200" HorizontalAlignment="Left"/>
-        <local:Bridge Width="400" Height="300" HorizontalAlignment="Left" Margin="400,0,0,0"/>
-        <local:Road Width="400" Height="200" HorizontalAlignment="Left" Margin="800,0,0,0"/>
+        <local:Road Width="350" Height="200" HorizontalAlignment="Left"/>
+        <local:Bridge Width="300" Height="300" HorizontalAlignment="Left" Margin="350,0,0,0"/>
+        <local:Road Width="300" Height="200" HorizontalAlignment="Left" Margin="650,0,0,0"/>
+        <local:Tunnel Width="300" Height="200" HorizontalAlignment="Left" Margin="950,0,0,0"/>
+        <local:CarGPX x:Name="car" Panel.ZIndex="9" Width="200" Height="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="30,350,0,0"/>
     </Grid>
 </Window>
