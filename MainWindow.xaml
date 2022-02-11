@@ -7,7 +7,11 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="720" Width="1280">
     <Grid x:Name="gr">
-        <TextBox Width="200" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top" TextChanged="T_Size_TextChanged"/>
-        <local:CarGPX x:Name="car" Panel.ZIndex="9" Width="200" Height="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="30,350,0,0"/>
+        <TextBox Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top"  Text="1"  TextChanged="T_Size_TextChanged"/>
+        <local:CarGPX x:Name="car" Panel.ZIndex="9" Width="200" Height="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="30,100,0,0"/>
+        <Button Panel.ZIndex="9" HorizontalAlignment="Center" VerticalAlignment="Top" Content="Up" Click="B_Up"/>
+        <Button Panel.ZIndex="9" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Left" Click="B_Left"/>
+        <Button Panel.ZIndex="9" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Right" Click="B_Right"/>
+        <Button Panel.ZIndex="9" HorizontalAlignment="Center" VerticalAlignment="Bottom" Content="Down" Click="B_Down"/>
     </Grid>
 </Window>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace ATNC;
 
@@ -16,6 +17,18 @@ internal class Car {
 	public ushort Speed { get; set; }
 	public LightState Light { get; set; }
 	public string Destination { get; set; }
+	public Thickness Margin {
+		get => _gpx.Margin;
+		set => _gpx.Margin = value;
+	}
+	public double Width {
+		get => _gpx.Width;
+		set => _gpx.Width = value;
+	}
+	public double Height {
+		get => _gpx.Height;
+		set => _gpx.Height = value;
+	}
 
 	public delegate void RoadTypeChanged(object sender, RoadTypeEventArgs e);
 	public event RoadTypeChanged RoadChanged;

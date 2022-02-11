@@ -9,7 +9,7 @@
     <Grid>
 
         <Rectangle Fill="Black"/>
-        <Rectangle Fill="Yellow" Height="15" Grid.Row="1"/>
+        <Rectangle Fill="Yellow" Height="3" Grid.Row="1"/>
         <Rectangle Fill="Black" Grid.Row="2"/>
 
         <Grid.RowDefinitions>
