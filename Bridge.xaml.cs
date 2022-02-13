@@ -1,24 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ATNC;
 /// <summary>
 /// Interakční logika pro Bridge.xaml
 /// </summary>
 public partial class Bridge : UserControl {
-	public Bridge() {
-		InitializeComponent();
+	public Bridge() => InitializeComponent();
+
+	private void Resize(object sender, SizeChangedEventArgs e) {
+		double h = gr.RowDefinitions[1].ActualHeight / 5d;
+		gr.RowDefinitions[0].Height = new(h);
+		gr.RowDefinitions[2].Height = new(h);
 	}
 }
