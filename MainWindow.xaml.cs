@@ -14,7 +14,7 @@ public partial class MainWindow : Window {
 	private const double _advance = 10d;
 	private const double _carh = 100;
 	private const double _carw = 200;
-	private const string _str = "n0;0;1000;200;0 b1000;-25;3000;250;0 n4000;0;10000;200;0";
+	private const string _str = "n500;0;1000;200;0 b500+1000;-25;3000;250;0 n3000+500+1000;0;10000;200;0 t3000+500+1000+10000;0;3000;200;0";
 	private readonly Car _car;
 	private readonly List<Car> _cars = new();
 	private readonly DispatcherTimer _cartimer = new();
@@ -25,12 +25,8 @@ public partial class MainWindow : Window {
 		{ Direction.Down, (item) => new Thickness(item.Left, item.Top + _advance, item.Right, item.Bottom) }
 	};
 
+	public readonly List<RoadsWrapper> cords = new();
 	public readonly List<UserControl> roads = new();
-	private static readonly Dictionary<char, Type> _types = new() {
-		{ 'n', typeof(Road) },
-		{ 'b', typeof(Bridge) },
-		{ 't', typeof(Tunnel) }
-	};
 
 	private bool _done = true;
 	private string _prev;
@@ -44,10 +40,14 @@ public partial class MainWindow : Window {
 		_cartimer.Interval = new System.TimeSpan(0, 0, 0, 0, 10);
 		_cartimer.Start();
 		_car.RealSpeed = 50;
-		_car.Speed = 50d;
+		_car.MapSpeed = _car.RealSpeed / _scale;
 		_cartimer.Tick += (sender, e) => _car.Drive();
 		_cars.Add(_car);
-		_car.RoadChanged += (sender, e) => state.Text = Enum.GetName(e.RoadType);
+		_car.RoadChanged += (sender, e) => {
+			_car.RealSpeed = e.RecommendedSpeed;
+			_car.MapSpeed = _car.RealSpeed / (double)_scale;
+			state.Text = $"{sender as Car} {Enum.GetName(e.RoadType)} {_car.RealSpeed} {_car.MapSpeed}";
+		};
 	}
 
 	private void B_Down(object sender, RoutedEventArgs e) {
@@ -96,20 +96,19 @@ public partial class MainWindow : Window {
 			roads.RemoveAt(0);
 		}
 
+		cords.Clear();
+
 		foreach (string item in _str.Split(' ')) {
-			UserControl c = (UserControl)Activator.CreateInstance(_types[item[0]]);
+			cords.Add(new RoadsWrapper(item));
 
-			string[] spl = item.Split(';');
-			spl[0] = spl[0].Remove(0, 1);
-
-			double[] spld = spl.Select(x => double.Parse(x)).ToArray();
+			UserControl c = (UserControl)Activator.CreateInstance(cords[^1].type);
 
 			c.HorizontalAlignment = HorizontalAlignment.Left;
 			c.VerticalAlignment = VerticalAlignment.Top;
-			c.Width = spld[2] / _scale;
-			c.Height = spld[3] / _scale;
-			c.Margin = new(spld[0] / _scale, (spld[1] / _scale) + _ychange, 0, 0);
-			c.RenderTransform = new RotateTransform(spld[4], c.Width / 2, c.Height / 2);
+			c.Width = cords[^1].w / _scale;
+			c.Height = cords[^1].h / _scale;
+			c.Margin = new(cords[^1].x / _scale, (cords[^1].y / _scale) + _ychange, 0, 0);
+			c.RenderTransform = new RotateTransform(cords[^1].angle, c.Width / 2, c.Height / 2);
 
 			gr.Children.Add(c);
 
@@ -125,14 +124,14 @@ public partial class MainWindow : Window {
 			car.Width = _carw / _scale;
 			car.Height = _carh / _scale;
 			car.Margin = new Thickness(margin.Left / _scale, margin.Top - (_carh - car.Height), margin.Right, margin.Bottom);
-			car.Speed = (ushort)(car.RealSpeed / (double)_scale);
+			car.MapSpeed = (car.RealSpeed / (double)_scale);
 		}
 	}
 
 	private void T_Size_TextChanged(object sender, TextChangedEventArgs e) {
 		TextBox tb = (sender as TextBox);
 
-		if(!_done) {
+		if (!_done) {
 			tb.Text = _prev;
 			return;
 		}
