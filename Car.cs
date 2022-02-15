@@ -48,8 +48,8 @@ internal class Car {
 				_gpx.Margin.Bottom
 			);
 
-			Touches();
-		}
+		Touches();
+	}
 
 	private void ChangeRotation() {
 		RotateTransform rot = (_gpx.RenderTransform as TransformGroup).Children[0] as RotateTransform;
@@ -57,24 +57,24 @@ internal class Car {
 	}
 
 	private void Touches() {
-		Thickness m = _gpx.Margin;
 		double h = _gpx.ActualHeight,
 			w = _gpx.ActualWidth;
 
-		foreach (RoadsWrapper item in (Window.GetWindow(_gpx) as MainWindow).cords) {
-			if (m.Top >= item.y
-				&& m.Top <= item.y + item.h
-				&& m.Left >= item.x
-				&& m.Left <= item.x + item.w)
-			{
-				if (item.type == typeof(Road) && _lasttype != typeof(Road))
+		foreach (System.Windows.Controls.UserControl item in (Window.GetWindow(_gpx) as MainWindow).roads) {
+			if (_gpx.Margin.Top >= item.Margin.Top
+				&& _gpx.Margin.Top <= item.Margin.Top + item.Height
+				&& _gpx.Margin.Left >= item.Margin.Left
+				&& _gpx.Margin.Left <= item.Margin.Left + item.Width) {
+				Type t = item.GetType();
+
+				if (t == typeof(Road) && _lasttype != typeof(Road))
 					RoadChanged?.Invoke(this, new(RoadType.Normal));
-				else if (item.type == typeof(Tunnel) && _lasttype != typeof(Tunnel))
+				else if (t == typeof(Tunnel) && _lasttype != typeof(Tunnel))
 					RoadChanged?.Invoke(this, new(RoadType.Tunnel));
-				else if (item.type == typeof(Bridge) && _lasttype != typeof(Bridge))
+				else if (t == typeof(Bridge) && _lasttype != typeof(Bridge))
 					RoadChanged?.Invoke(this, new(RoadType.Bridge));
 
-				_lasttype = item.GetType();
+				_lasttype = t;
 
 				break;
 			}

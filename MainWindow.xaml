@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ATNC"
         mc:Ignorable="d"
-        Title="MainWindow" Height="720" Width="1280">
+        Title="MainWindow" Height="720" Width="1280"
+        WindowState="Maximized">
     <Grid x:Name="gr">
         <TextBox Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Text="1"  TextChanged="T_Size_TextChanged"/>
         <TextBox x:Name="state" Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>

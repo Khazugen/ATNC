@@ -34,21 +34,28 @@ public partial class MainWindow : Window {
 	private double _ychange = 0d;
 
 	public MainWindow() {
+		InitCords();
 		InitializeComponent();
 
-		_car = new Car(car);
-		_cartimer.Interval = new System.TimeSpan(0, 0, 0, 0, 10);
-		_cartimer.Start();
-		_car.RealSpeed = 50;
-		_car.MapSpeed = _car.RealSpeed / _scale;
-		_cartimer.Tick += (sender, e) => _car.Drive();
+		_car = new Car(car) {
+			RealSpeed = 50,
+			MapSpeed = _car.RealSpeed / _scale
+		};
+
 		_cars.Add(_car);
+
 		_car.RoadChanged += (sender, e) => {
 			_car.RealSpeed = e.RecommendedSpeed;
 			_car.MapSpeed = _car.RealSpeed / (double)_scale;
 			state.Text = $"{sender as Car} {Enum.GetName(e.RoadType)} {_car.RealSpeed} {_car.MapSpeed}";
 		};
+
+		_cartimer.Interval = new System.TimeSpan(0, 0, 0, 0, 10);
+		_cartimer.Start();
+		_cartimer.Tick += (sender, e) => _car.Drive();
 	}
+
+	private void InitCords() => Array.ForEach(_str.Split(' '), x => cords.Add(new RoadsWrapper(x)));
 
 	private void B_Down(object sender, RoutedEventArgs e) {
 		foreach (UserControl item in roads)
@@ -87,28 +94,20 @@ public partial class MainWindow : Window {
 	}
 
 	private void DrawGPS() {
-		//
-		// Získá z centrály silnice a postaví jej na základě měřítka
-		//
-
 		while (roads.Count != 0) {
 			gr.Children.Remove(roads[0]);
 			roads.RemoveAt(0);
 		}
 
-		cords.Clear();
-
-		foreach (string item in _str.Split(' ')) {
-			cords.Add(new RoadsWrapper(item));
-
-			UserControl c = (UserControl)Activator.CreateInstance(cords[^1].type);
+		foreach (RoadsWrapper item in cords) {
+			UserControl c = (UserControl)Activator.CreateInstance(item.type);
 
 			c.HorizontalAlignment = HorizontalAlignment.Left;
 			c.VerticalAlignment = VerticalAlignment.Top;
-			c.Width = cords[^1].w / _scale;
-			c.Height = cords[^1].h / _scale;
-			c.Margin = new(cords[^1].x / _scale, (cords[^1].y / _scale) + _ychange, 0, 0);
-			c.RenderTransform = new RotateTransform(cords[^1].angle, c.Width / 2, c.Height / 2);
+			c.Width = item.w / _scale;
+			c.Height = item.h / _scale;
+			c.Margin = new(item.x / _scale, (item.y / _scale) + _ychange, 0, 0);
+			c.RenderTransform = new RotateTransform(item.angle, c.Width / 2, c.Height / 2);
 
 			gr.Children.Add(c);
 
@@ -116,14 +115,12 @@ public partial class MainWindow : Window {
 		}
 
 		foreach (Car car in _cars) {
-			Thickness margin = car.Margin;
-
 			if (car.Width != _carw && car.Height != _carh)
-				margin = new Thickness(margin.Left * _lastscale, margin.Top + (_carh - car.Height), margin.Right, margin.Bottom);
+				car.Margin = new Thickness(car.Margin.Left * _lastscale, car.Margin.Top + (_carh - car.Height), car.Margin.Right, car.Margin.Bottom);
 
 			car.Width = _carw / _scale;
 			car.Height = _carh / _scale;
-			car.Margin = new Thickness(margin.Left / _scale, margin.Top - (_carh - car.Height), margin.Right, margin.Bottom);
+			car.Margin = new Thickness(car.Margin.Left / _scale, car.Margin.Top - (_carh - car.Height), car.Margin.Right, car.Margin.Bottom);
 			car.MapSpeed = (car.RealSpeed / (double)_scale);
 		}
 	}
