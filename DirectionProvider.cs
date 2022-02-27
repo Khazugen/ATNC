@@ -7,5 +7,7 @@ using System.Threading.Tasks;
 namespace ATNC;
 
 internal class DirectionProvider {
-	
+	public DirectionProvider(string destination, IEnumerable<RoadsWrapper> roads) {
+		
+	}
 }

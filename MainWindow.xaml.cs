@@ -39,7 +39,7 @@ public partial class MainWindow : Window {
 
 		_car = new Car(car) {
 			RealSpeed = 50,
-			MapSpeed = _car.RealSpeed / _scale
+			MapSpeed = 50 / _scale
 		};
 
 		_cars.Add(_car);

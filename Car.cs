@@ -17,12 +17,13 @@ internal class Car {
 		set => _gpx.Height = value;
 	}
 	public LightState Light { get; set; }
+	public double MapSpeed { get; set; }
+
 	public Thickness Margin {
 		get => _gpx.Margin;
 		set => _gpx.Margin = value;
 	}
 	public ushort RealSpeed { get; set; }
-	public double MapSpeed { get; set; }
 	public double Width {
 		get => _gpx.Width;
 		set => _gpx.Width = value;
@@ -64,7 +65,8 @@ internal class Car {
 			if (_gpx.Margin.Top >= item.Margin.Top
 				&& _gpx.Margin.Top <= item.Margin.Top + item.Height
 				&& _gpx.Margin.Left >= item.Margin.Left
-				&& _gpx.Margin.Left <= item.Margin.Left + item.Width) {
+				&& _gpx.Margin.Left <= item.Margin.Left + item.Width)
+			{
 				Type t = item.GetType();
 
 				if (t == typeof(Road) && _lasttype != typeof(Road))
