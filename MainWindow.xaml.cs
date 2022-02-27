@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,7 +15,6 @@ public partial class MainWindow : Window {
 	private const double _advance = 10d;
 	private const double _carh = 100;
 	private const double _carw = 200;
-	private const string _str = "n500;0;1000;200;0 b500+1000;-25;3000;250;0 n3000+500+1000;0;10000;200;0 t3000+500+1000+10000;0;3000;200;0";
 	private readonly Car _car;
 	private readonly List<Car> _cars = new();
 	private readonly DispatcherTimer _cartimer = new();
@@ -39,7 +39,7 @@ public partial class MainWindow : Window {
 
 		_car = new Car(car) {
 			RealSpeed = 50,
-			MapSpeed = 50 / _scale
+			MapSpeed = 50
 		};
 
 		_cars.Add(_car);
@@ -55,7 +55,26 @@ public partial class MainWindow : Window {
 		_cartimer.Tick += (sender, e) => _car.Drive();
 	}
 
-	private void InitCords() => Array.ForEach(_str.Split(' '), x => cords.Add(new RoadsWrapper(x)));
+	private void InitCords() {
+		Process psi = new() {
+			StartInfo = new ProcessStartInfo {
+				FileName = @"C:\Users\pruch\source\repos\ATNC.Headquarters\bin\Debug\net6.0\ATNC.Headquarters.exe",
+				Arguments = "ggps",
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				CreateNoWindow = true
+			}
+		};
+
+		psi.Start();
+
+		string s = "";
+
+		while (!psi.StandardOutput.EndOfStream)
+			s += psi.StandardOutput.ReadLine();
+
+		Array.ForEach(s.Replace("\n", "").Replace("\r", "").Replace("\t", "").Split(' '), x => cords.Add(new RoadsWrapper(x)));
+	}
 
 	private void B_Down(object sender, RoutedEventArgs e) {
 		foreach (UserControl item in roads)
@@ -107,7 +126,7 @@ public partial class MainWindow : Window {
 			c.Width = item.w / _scale;
 			c.Height = item.h / _scale;
 			c.Margin = new(item.x / _scale, (item.y / _scale) + _ychange, 0, 0);
-			c.RenderTransform = new RotateTransform(item.angle, c.Width / 2, c.Height / 2);
+			c.RenderTransform = new RotateTransform(item.angle, 0, c.Height / 2);
 
 			gr.Children.Add(c);
 
