@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -12,12 +11,11 @@ namespace ATNC;
 public partial class MainWindow : Window {
 	private enum Direction { Left, Right, Up, Down }
 
+	public readonly List<RoadsWrapper> cords = new();
+	public readonly List<UserControl> roads = new();
 	private const double _advance = 10d;
 	private const double _carh = 100;
 	private const double _carw = 200;
-	private readonly Car _car;
-	private readonly List<Car> _cars = new();
-	private readonly DispatcherTimer _cartimer = new();
 	private static readonly Dictionary<Direction, Func<Thickness, Thickness>> _dirs = new() {
 		{ Direction.Left, (item) => new Thickness(item.Left - _advance, item.Top, item.Right, item.Bottom) },
 		{ Direction.Right, (item) => new Thickness(item.Left + _advance, item.Top, item.Right, item.Bottom) },
@@ -25,9 +23,8 @@ public partial class MainWindow : Window {
 		{ Direction.Down, (item) => new Thickness(item.Left, item.Top + _advance, item.Right, item.Bottom) }
 	};
 
-	public readonly List<RoadsWrapper> cords = new();
-	public readonly List<UserControl> roads = new();
-
+	private readonly List<Car> _cars = new();
+	private readonly DispatcherTimer _cartimer = new();
 	private bool _done = true;
 	private string _prev;
 	private uint _scale = 1u, _lastscale = 1u;
@@ -37,43 +34,40 @@ public partial class MainWindow : Window {
 		InitCords();
 		InitializeComponent();
 
-		_car = new Car(car) {
-			RealSpeed = 50,
-			MapSpeed = 50
-		};
-
-		_cars.Add(_car);
-
-		_car.RoadChanged += (sender, e) => {
-			_car.RealSpeed = e.RecommendedSpeed;
-			_car.MapSpeed = _car.RealSpeed / (double)_scale;
-			state.Text = $"{sender as Car} {Enum.GetName(e.RoadType)} {_car.RealSpeed} {_car.MapSpeed}";
-		};
-
 		_cartimer.Interval = new System.TimeSpan(0, 0, 0, 0, 10);
 		_cartimer.Start();
-		_cartimer.Tick += (sender, e) => _car.Drive();
+		_cartimer.Tick += (sender, e) => _cars.ForEach(x => x.Drive());
 	}
 
-	private void InitCords() {
-		Process psi = new() {
-			StartInfo = new ProcessStartInfo {
-				FileName = @"C:\Users\pruch\source\repos\ATNC.Headquarters\bin\Debug\net6.0\ATNC.Headquarters.exe",
-				Arguments = "ggps",
-				UseShellExecute = false,
-				RedirectStandardOutput = true,
-				CreateNoWindow = true
-			}
+	private void B_Add_Car(object sender, RoutedEventArgs e) {
+		CarGPX gpx = new() {
+			Name = "car",
+			HorizontalAlignment = HorizontalAlignment.Left,
+			VerticalAlignment = VerticalAlignment.Top,
+			RenderTransformOrigin = new Point(0.5d, 0.5d)
 		};
 
-		psi.Start();
+		gr.Children.Add(gpx);
+		Grid.SetZIndex(gpx, 9);
+		gpx.RenderTransform = new TransformGroup();
+		(gpx.RenderTransform as TransformGroup).Children.Add(new RotateTransform(0));
 
-		string s = "";
+		Car car = new(gpx) {
+			RealSpeed = 50,
+			Margin = new Thickness(0, 0, 0, 0),
+			Width = _carw / _scale,
+			Height = _carh / _scale
+		};
 
-		while (!psi.StandardOutput.EndOfStream)
-			s += psi.StandardOutput.ReadLine();
+		car.MapSpeed = car.RealSpeed / (double)_scale;
+		_cars.Add(car);
 
-		Array.ForEach(s.Replace("\n", "").Replace("\r", "").Replace("\t", "").Split(' '), x => cords.Add(new RoadsWrapper(x)));
+		car.RoadChanged += (sender, e) => {
+			car.RealSpeed = e.RecommendedSpeed;
+			car.MapSpeed = car.RealSpeed / (double)_scale;
+			state.Text = $"{sender as Car} {Enum.GetName(e.RoadType)} {car.RealSpeed} {car.MapSpeed}";
+		};
+
 	}
 
 	private void B_Down(object sender, RoutedEventArgs e) {
@@ -128,20 +122,49 @@ public partial class MainWindow : Window {
 			c.Margin = new(item.x / _scale, (item.y / _scale) + _ychange, 0, 0);
 			c.RenderTransform = new RotateTransform(item.angle, 0, c.Height / 2);
 
+			c.Tag = item.name;
+
 			gr.Children.Add(c);
 
 			roads.Add(c);
 		}
 
 		foreach (Car car in _cars) {
-			if (car.Width != _carw && car.Height != _carh)
-				car.Margin = new Thickness(car.Margin.Left * _lastscale, car.Margin.Top + (_carh - car.Height), car.Margin.Right, car.Margin.Bottom);
+			if (car.Width != _carw && car.Height != _carh) {
+				car.Margin = car.GetRotation() == 0
+					? new Thickness(car.Margin.Left * _lastscale, car.Margin.Top, car.Margin.Right, car.Margin.Bottom)
+					: new Thickness(car.Margin.Left * _lastscale, car.Margin.Top + (_carh - car.Height), car.Margin.Right, car.Margin.Bottom);
+			}
 
 			car.Width = _carw / _scale;
 			car.Height = _carh / _scale;
-			car.Margin = new Thickness(car.Margin.Left / _scale, car.Margin.Top - (_carh - car.Height), car.Margin.Right, car.Margin.Bottom);
+
+			car.Margin = car.GetRotation() == 0d
+				? new Thickness(car.Margin.Left / _scale, car.Margin.Top, car.Margin.Right, car.Margin.Bottom)
+				: new Thickness(car.Margin.Left / _scale, car.Margin.Top - (_carh - car.Height), car.Margin.Right, car.Margin.Bottom);
 			car.MapSpeed = (car.RealSpeed / (double)_scale);
 		}
+	}
+
+	private void InitCords() {
+		Process psi = new() {
+			StartInfo = new ProcessStartInfo {
+				FileName = @"D:\source\repos\ATNC.Headquarters\bin\Debug\net6.0\ATNC.Headquarters.exe",
+				Arguments = "ggps",
+				UseShellExecute = false,
+				RedirectStandardOutput = true,
+				CreateNoWindow = true
+			}
+		};
+
+		psi.Start();
+
+		string s = "";
+
+		while (!psi.StandardOutput.EndOfStream)
+			s += psi.StandardOutput.ReadLine();
+
+		Array.ForEach(s.Replace("\n", "").Replace("\r", "").Replace("\t", "").Split(' '), x => cords.Add(new RoadsWrapper(x)));
 	}
 
 	private void T_Size_TextChanged(object sender, TextChangedEventArgs e) {

@@ -10,16 +10,10 @@
     <Grid x:Name="gr">
         <TextBox Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Text="1"  TextChanged="T_Size_TextChanged"/>
         <TextBox x:Name="state" Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
-        <local:CarGPX x:Name="car" Panel.ZIndex="9" Width="200" Height="100" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="30,100,0,0" RenderTransformOrigin="0.5,0.5">
-            <local:CarGPX.RenderTransform>
-                <TransformGroup>
-                    <RotateTransform Angle="0"/>
-                </TransformGroup>
-            </local:CarGPX.RenderTransform>
-        </local:CarGPX>
         <Button Panel.ZIndex="9" HorizontalAlignment="Center" VerticalAlignment="Top" Content="Up" Click="B_Up"/>
         <Button Panel.ZIndex="9" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Left" Click="B_Left"/>
         <Button Panel.ZIndex="9" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Right" Click="B_Right"/>
         <Button Panel.ZIndex="9" HorizontalAlignment="Center" VerticalAlignment="Bottom" Content="Down" Click="B_Down"/>
+        <Button Content="Vytvořit" HorizontalAlignment="Right" VerticalAlignment="Top" Click="B_Add_Car"/>
     </Grid>
 </Window>

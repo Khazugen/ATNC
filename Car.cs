@@ -54,8 +54,10 @@ internal class Car {
 
 	private void ChangeRotation() {
 		RotateTransform rot = (_gpx.RenderTransform as TransformGroup).Children[0] as RotateTransform;
-		rot.Angle = rot.Angle == 0 ? 90 : 0;
+		rot.Angle = rot.Angle == 0d ? 90d : 0d;
 	}
+
+	public double GetRotation() => ((_gpx.RenderTransform as TransformGroup).Children[0] as RotateTransform).Angle;
 
 	private void Touches() {
 		double h = _gpx.ActualHeight,
