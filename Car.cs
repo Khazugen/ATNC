@@ -67,8 +67,7 @@ internal class Car {
 			if (_gpx.Margin.Top >= item.Margin.Top
 				&& _gpx.Margin.Top <= item.Margin.Top + item.Height
 				&& _gpx.Margin.Left >= item.Margin.Left
-				&& _gpx.Margin.Left <= item.Margin.Left + item.Width)
-			{
+				&& _gpx.Margin.Left <= item.Margin.Left + item.Width) {
 				Type t = item.GetType();
 
 				if (t == typeof(Road) && _lasttype != typeof(Road))
@@ -83,6 +82,24 @@ internal class Car {
 				break;
 			}
 		}
+	}
+
+	private bool MultipleTouches() {
+		double h = _gpx.ActualHeight,
+			w = _gpx.ActualWidth;
+
+		byte touches = 0;
+
+		foreach (System.Windows.Controls.UserControl item in (Window.GetWindow(_gpx) as MainWindow).roads)
+			if (_gpx.Margin.Top >= item.Margin.Top
+				&& _gpx.Margin.Top <= item.Margin.Top + item.Height
+				&& _gpx.Margin.Left >= item.Margin.Left
+				&& _gpx.Margin.Left <= item.Margin.Left + item.Width)
+
+					if (++touches == 2)
+						return true;
+
+		return false;
 	}
 
 	public class RoadTypeEventArgs : EventArgs {

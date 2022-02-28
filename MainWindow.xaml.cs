@@ -149,7 +149,7 @@ public partial class MainWindow : Window {
 	private void InitCords() {
 		Process psi = new() {
 			StartInfo = new ProcessStartInfo {
-				FileName = @"D:\source\repos\ATNC.Headquarters\bin\Debug\net6.0\ATNC.Headquarters.exe",
+				FileName = @"C:\Users\pruch\source\repos\ATNC.Headquarters\bin\Debug\net6.0\ATNC.Headquarters.exe",
 				Arguments = "ggps",
 				UseShellExecute = false,
 				RedirectStandardOutput = true,
