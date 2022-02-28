@@ -4,10 +4,11 @@ using System.Linq;
 
 namespace ATNC;
 
-public class RoadsWrapper {
+public class RoadWrapper {
 	public readonly double x, y, w, h, angle;
 	public readonly Type type;
 	public readonly string name;
+	private readonly uint _id;
 
 	public static readonly Dictionary<char, Type> types = new() {
 		{ 'n', typeof(Road) },
@@ -15,7 +16,9 @@ public class RoadsWrapper {
 		{ 't', typeof(Tunnel) }
 	};
 
-	public RoadsWrapper(Type type, double x, double y, double w, double h, double angle, string name) {
+	private static uint _sid = 0;
+
+	public RoadWrapper(Type type, double x, double y, double w, double h, double angle, string name) {
 		this.type = type;
 		this.x = x;
 		this.y = y;
@@ -23,9 +26,10 @@ public class RoadsWrapper {
 		this.h = h;
 		this.angle = angle;
 		this.name = name;
+		_id = _sid++;
 	}
 
-	public RoadsWrapper(string str) {
+	public RoadWrapper(string str) {
 		type = types[str[0]];
 
 		double[] spld = str
@@ -47,5 +51,19 @@ public class RoadsWrapper {
 
 		if (name == "_")
 			name = null;
+		_id = _sid++;
 	}
+
+	public override string ToString() => $"x - {x}; y - {y}; width - {w}; height - {h}; angle - {angle}; name - {name}";
+	public override bool Equals(object obj) =>
+		obj is RoadWrapper wrapper
+		&& x == wrapper.x
+		&& y == wrapper.y
+		&& w == wrapper.w
+		&& h == wrapper.h
+		&& angle == wrapper.angle
+		&& EqualityComparer<Type>.Default.Equals(type, wrapper.type)
+		&& name == wrapper.name;
+
+	public override int GetHashCode() => (int)_id;
 }

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
+using System.Collections.Generic;
 
 namespace ATNC;
 
@@ -10,6 +12,8 @@ internal class Car {
 
 	private readonly CarGPX _gpx;
 	private Type _lasttype = typeof(Road);
+	private bool _active;
+	private readonly List<DirectionChange> _changes = new();
 
 	public string Destination { get; set; }
 	public double Height {
@@ -35,6 +39,9 @@ internal class Car {
 	public Car(CarGPX gpx) => _gpx = gpx;
 
 	public void Drive() {
+		if (!_active)
+			return;
+
 		_gpx.Margin = ((_gpx.RenderTransform as TransformGroup).Children[0] as RotateTransform).Angle == 0
 			? new Thickness(
 				_gpx.Margin.Left + MapSpeed / 5d,
@@ -52,6 +59,18 @@ internal class Car {
 		Touches();
 	}
 
+	public void SetDestination(string destination) {
+		DirectionProvider dp = new(destination, (Window.GetWindow(_gpx) as Tab).cords);
+		_active = true;
+
+		//_changes
+	}
+
+	private void DestinationCompleted() {
+		Destination = "";
+		_active = false;
+	}
+
 	private void ChangeRotation() {
 		RotateTransform rot = (_gpx.RenderTransform as TransformGroup).Children[0] as RotateTransform;
 		rot.Angle = rot.Angle == 0d ? 90d : 0d;
@@ -63,20 +82,38 @@ internal class Car {
 		double h = _gpx.ActualHeight,
 			w = _gpx.ActualWidth;
 
-		foreach (System.Windows.Controls.UserControl item in (Window.GetWindow(_gpx) as MainWindow).roads) {
+		foreach (System.Windows.Controls.UserControl item in (Window.GetWindow(_gpx) as Tab).roads) {
 			if (_gpx.Margin.Top >= item.Margin.Top
 				&& _gpx.Margin.Top <= item.Margin.Top + item.Height
 				&& _gpx.Margin.Left >= item.Margin.Left
 				&& _gpx.Margin.Left <= item.Margin.Left + item.Width) {
 				Type t = item.GetType();
 
-				if (t == typeof(Road) && _lasttype != typeof(Road))
-					RoadChanged?.Invoke(this, new(RoadType.Normal));
-				else if (t == typeof(Tunnel) && _lasttype != typeof(Tunnel))
-					RoadChanged?.Invoke(this, new(RoadType.Tunnel));
-				else if (t == typeof(Bridge) && _lasttype != typeof(Bridge))
-					RoadChanged?.Invoke(this, new(RoadType.Bridge));
+				RoadType? r = null;
+				ushort u;
 
+				if (t == typeof(Road) && _lasttype != typeof(Road))
+					r = RoadType.Normal;
+				else if (t == typeof(Tunnel) && _lasttype != typeof(Tunnel))
+					r = RoadType.Tunnel;
+				else if (t == typeof(Bridge) && _lasttype != typeof(Bridge))
+					r = RoadType.Bridge;
+
+				u = (ushort)r.Value;
+
+				RoadWrapper wrapper = item.Tag as RoadWrapper;
+
+				Process psi = StartProcess($"gwet {wrapper.x};{wrapper.y}");
+				psi.Start();
+
+				sbyte weather = sbyte.Parse(psi.StandardOutput.ReadLine());
+
+				if (weather <= 10)
+					u /= 2;
+				else if (weather <= 0)
+					u -= (ushort)(u / 3);
+
+				RoadChanged?.Invoke(this, new(r.Value, u));
 				_lasttype = t;
 
 				break;
@@ -90,25 +127,49 @@ internal class Car {
 
 		byte touches = 0;
 
-		foreach (System.Windows.Controls.UserControl item in (Window.GetWindow(_gpx) as MainWindow).roads)
+		foreach (System.Windows.Controls.UserControl item in (Window.GetWindow(_gpx) as Tab).roads)
 			if (_gpx.Margin.Top >= item.Margin.Top
 				&& _gpx.Margin.Top <= item.Margin.Top + item.Height
 				&& _gpx.Margin.Left >= item.Margin.Left
 				&& _gpx.Margin.Left <= item.Margin.Left + item.Width)
 
-					if (++touches == 2)
-						return true;
+				if (++touches == 2)
+					return true;
 
 		return false;
 	}
+
+	public static Process StartProcess(string command) => new() {
+		StartInfo = new ProcessStartInfo {
+			FileName = @"C:\Users\pruch\source\repos\ATNC.Headquarters\bin\Debug\net6.0\ATNC.Headquarters.exe",
+			Arguments = command,
+			UseShellExecute = false,
+			RedirectStandardOutput = true,
+			CreateNoWindow = true
+		}
+	};
 
 	public class RoadTypeEventArgs : EventArgs {
 		public ushort RecommendedSpeed { get; }
 		public RoadType RoadType { get; }
 
-		public RoadTypeEventArgs(RoadType roadType) {
+		public RoadTypeEventArgs(RoadType roadType, ushort recommendedSpeed) {
 			RoadType = roadType;
-			RecommendedSpeed = (ushort)roadType;
+			RecommendedSpeed = recommendedSpeed;
+		}
+	}
+
+	 struct DirectionChange {
+		public  enum Direction { Up, Down, Left, Right }
+
+		public readonly Direction fromdirection, todirection;
+		public readonly double x, y;
+
+		public DirectionChange(Direction fromdirection, Direction todirection, double x, double y) {
+			this.fromdirection = fromdirection;
+			this.todirection = todirection;
+			this.x = x;
+			this.y = y;
 		}
 	}
 }
