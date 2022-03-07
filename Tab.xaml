@@ -9,6 +9,7 @@
         WindowState="Maximized">
     <Grid x:Name="gr">
         <TextBox x:Name="state" Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+        <TextBox x:Name="dir" Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
         <Button Panel.ZIndex="9" HorizontalAlignment="Center" VerticalAlignment="Top" Content="Up" Click="B_Up"/>
         <Button Panel.ZIndex="9" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Left" Click="B_Left"/>
         <Button Panel.ZIndex="9" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Right" Click="B_Right"/>

@@ -141,7 +141,7 @@ internal class Car {
 
 	public static Process StartProcess(string command) => new() {
 		StartInfo = new ProcessStartInfo {
-			FileName = @"C:\Users\pruch\source\repos\ATNC.Headquarters\bin\Debug\net6.0\ATNC.Headquarters.exe",
+			FileName = @"D:\source\repos\ATNC.Headquarters\bin\Debug\net6.0\ATNC.Headquarters.exe",
 			Arguments = command,
 			UseShellExecute = false,
 			RedirectStandardOutput = true,
