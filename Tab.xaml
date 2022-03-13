@@ -8,12 +8,11 @@
         Title="MainWindow" Height="720" Width="1280"
         WindowState="Maximized">
     <Grid x:Name="gr">
-        <TextBox x:Name="state" Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
-        <TextBox x:Name="dir" Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-        <Button Panel.ZIndex="9" HorizontalAlignment="Center" VerticalAlignment="Top" Content="Up" Click="B_Up"/>
-        <Button Panel.ZIndex="9" HorizontalAlignment="Left" VerticalAlignment="Center" Content="Left" Click="B_Left"/>
-        <Button Panel.ZIndex="9" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Right" Click="B_Right"/>
-        <Button Panel.ZIndex="9" HorizontalAlignment="Center" VerticalAlignment="Bottom" Content="Down" Click="B_Down"/>
-        <Button Content="Vytvořit" HorizontalAlignment="Right" VerticalAlignment="Top" Click="B_Add_Car"/>
+        <TextBox x:Name="state" Panel.ZIndex="9" Height="200" VerticalAlignment="Top" FontSize="15"/>
+        <TextBox x:Name="tb_destination" Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+        <Button Content="OK" Margin="200,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="30" Click="B_Direction_Click"/>
+        <Button Margin="5, 200, 5, 5" Panel.ZIndex="9" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Left" Click="B_Left_Click"/>
+        <Button Margin="5, 200, 5, 5" Panel.ZIndex="9" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Right" Click="B_Right_Click"/>
+        <Button Margin="5,5,5,5" Content="Vytvořit" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="B_Add_Car_Click"/>
     </Grid>
 </Window>
