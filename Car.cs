@@ -9,7 +9,7 @@ using System.Windows.Threading;
 namespace ATNC;
 
 internal class Car {
-	public enum LightState { Off, Day, Meeting, Fog }
+	public enum LightState { Normal, Tunnel }
 	public enum RoadType { Normal = 50, Bridge = 80, Tunnel = 30 }
 
 	private readonly Random _rnd = new();
@@ -45,7 +45,6 @@ internal class Car {
 		get => _gpx.Height;
 		set => _gpx.Height = value;
 	}
-	public LightState Light { get; set; }
 	public double MapSpeed { get; set; }
 
 	public Thickness Margin {
@@ -57,6 +56,7 @@ internal class Car {
 		get => _gpx.Width;
 		set => _gpx.Width = value;
 	}
+	public LightState Lights { private set; get; }
 
 	public event RoadTypeChanged RoadChanged;
 	public delegate void RoadTypeChanged(object sender, RoadTypeEventArgs e);
@@ -148,13 +148,16 @@ internal class Car {
 
 				RoadType? r;
 
-				if (t == typeof(Road) && _lasttype != typeof(Road))
+				if (t == typeof(Road) && _lasttype != typeof(Road)) {
+					Lights = LightState.Normal;
 					r = RoadType.Normal;
-				else if (t == typeof(Tunnel) && _lasttype != typeof(Tunnel))
+				} else if (t == typeof(Tunnel) && _lasttype != typeof(Tunnel)) {
 					r = RoadType.Tunnel;
-				else if (t == typeof(Bridge) && _lasttype != typeof(Bridge))
+					Lights = LightState.Tunnel;
+				} else if (t == typeof(Bridge) && _lasttype != typeof(Bridge)) {
+					Lights = LightState.Normal;
 					r = RoadType.Bridge;
-				else
+				} else
 					continue;
 
 				_lasttype = t;
@@ -182,7 +185,7 @@ internal class Car {
 	}
 
 	public override string ToString() =>
-		$"ID: {id}; Destinace: {Destination}; Možná reálná rychlost: {RealSpeed}; Možná rychlost na mapě: {MapSpeed};{(_forceuntilcity ? " Auto jede do opravny; " : "")}" +
+		$"ID: {id}; Světla: {Enum.GetName(Lights)}; Destinace: {Destination}; Možná reálná rychlost: {RealSpeed}; Možná rychlost na mapě: {MapSpeed};{(_forceuntilcity ? " Auto jede do opravny; " : "")}" +
 		$"{(_forcestop ? $"Auto stojí po dobu {_delay} sekund " : "")}";
 
 	public class RoadTypeEventArgs : EventArgs {
