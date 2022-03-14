@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -21,6 +20,7 @@ internal class Car {
 	private Type _lasttype = null;
 	private bool _back, _forcestop, _forceuntilcity, _skip;
 	private int _delay;
+	private sbyte _weather;
 	private readonly DispatcherTimer _timer = new();
 
 	public string Destination {
@@ -45,7 +45,6 @@ internal class Car {
 		get => _gpx.Height;
 		set => _gpx.Height = value;
 	}
-	public double MapSpeed { get; set; }
 
 	public Thickness Margin {
 		get => _gpx.Margin;
@@ -64,17 +63,9 @@ internal class Car {
 	public Car(CarGPX gpx) {
 		_gpx = gpx;
 		id = _id++;
+		Headquaters.MeteoStation.WeatherChanged += (e) => _weather = e.Weather;
+		RoadChanged += (sender, e) => RealSpeed = e.AllowedSpeed;
 	}
-
-	public static Process StartProcess(string command) => new() {
-		StartInfo = new ProcessStartInfo {
-			FileName = @$"{SaveSystem.FilePath.headquaters}ATNC.Headquarters.exe",
-			Arguments = command,
-			UseShellExecute = false,
-			RedirectStandardOutput = true,
-			CreateNoWindow = true
-		}
-	};
 
 	public void Drive() {
 		if (_forcestop && !_skip) {
@@ -92,8 +83,15 @@ internal class Car {
 		if (!_active || _skip)
 			return;
 
+		double adv = _forceuntilcity ? _gpx.Margin.Left + (1d * (_back ? -1d : 1d)) : _gpx.Margin.Left + ((RealSpeed / 5d) * (_back ? -1d : 1d));
+
+		if (_weather is <= 10 and > 0)
+			adv /= 1.5d;
+		else if (_weather < 0)
+			adv /= 2d;
+
 		_gpx.Margin = new Thickness(
-				_forceuntilcity ? _gpx.Margin.Left + (1d * (_back ? -1d : 1d)) : _gpx.Margin.Left + ((MapSpeed / 5d) * (_back ? -1d : 1d)),
+				adv,
 				_gpx.Margin.Top,
 				_gpx.Margin.Right,
 				_gpx.Margin.Bottom
@@ -111,10 +109,7 @@ internal class Car {
 		if (val > 4)
 			return;
 
-		Process p = StartProcess($"err {val}");
-
-		p.Start();
-		string s = p.StandardOutput.ReadLine();
+		string s = Headquaters.commands["err"](val.ToString());
 
 		if (s == "-")
 			return;
@@ -162,22 +157,10 @@ internal class Car {
 
 				_lasttype = t;
 
-				ushort u = (ushort)r.Value;
-
 				if (wrapper.name == Destination)
 					Destination = null;
 
-				Process psi = StartProcess($"gwet {wrapper.x}");
-				psi.Start();
-
-				sbyte weather = sbyte.Parse(psi.StandardOutput.ReadLine());
-
-				if (weather is <= 10 and > 0)
-					u /= 2;
-				else if (weather <= 0)
-					u /= 3;
-
-				RoadChanged?.Invoke(this, new(r.Value, u, weather, wrapper.name));
+				RoadChanged?.Invoke(this, new(r.Value, (ushort)r.Value, wrapper.name));
 
 				break;
 			}
@@ -186,20 +169,17 @@ internal class Car {
 
 	public override string ToString() =>
 		$"ID: {id}; Světla: {Enum.GetName(Lights)}; Destinace: {Destination}; " +
-		$"Možná reálná rychlost: {RealSpeed}; Možná rychlost na mapě: {MapSpeed};" +
-		$"{(_forceuntilcity ? " Auto jede do opravny; " : "")}" +
+		$"Povolená reálná rychlost: {RealSpeed}; {(_forceuntilcity ? " Auto jede do opravny; " : "")}" +
 		$"{(_forcestop ? $"Auto stojí po dobu {_delay} sekund " : "")}";
 
 	public class RoadTypeEventArgs : EventArgs {
-		public ushort RecommendedSpeed { get; }
+		public ushort AllowedSpeed { get; }
 		public RoadType RoadType { get; }
-		public sbyte Weather { get; }
 		public string Name { get; }
 
-		public RoadTypeEventArgs(RoadType roadType, ushort recommendedSpeed, sbyte weather, string name) {
+		public RoadTypeEventArgs(RoadType roadType, ushort allowedspeed, string name) {
 			RoadType = roadType;
-			RecommendedSpeed = recommendedSpeed;
-			Weather = weather;
+			AllowedSpeed = allowedspeed;
 			Name = name;
 		}
 	}

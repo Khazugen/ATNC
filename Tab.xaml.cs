@@ -30,27 +30,13 @@ public partial class Tab : Window {
 
 	public Tab() {
 		InitCords();
-		StartSensors();
 		InitializeComponent();
 		DrawGPS();
 
 		_cartimer.Interval = new System.TimeSpan(0, 0, 0, 0, 10);
 		_cartimer.Start();
 		_cartimer.Tick += (sender, e) => _cars.ForEach(x => x.Drive());
-	}
-
-	private void StartSensors() {
-		Process p = new() {
-			StartInfo = new ProcessStartInfo {
-				FileName = $"{SaveSystem.FilePath.sensors}ATNC.Sensors.exe",
-				Arguments = $"{SaveSystem.FilePath.headquaters}weather.json {string.Join(' ', cords.Select(x => $"{x.x}"))}",
-				UseShellExecute = false,
-				RedirectStandardOutput = true,
-				CreateNoWindow = true
-			}
-		};
-
-		p.Start();
+		Headquaters.MeteoStation.WeatherChanged += (e) => l_temp.Content = $"{e.Weather}°C";
 	}
 
 	private void B_Add_Car_Click(object sender, RoutedEventArgs e) {
@@ -73,15 +59,10 @@ public partial class Tab : Window {
 
 		gpx.Tag = car.id;
 
-		car.MapSpeed = car.RealSpeed / (double)_scale;
 		_cars.Add(car);
 
-		car.RoadChanged += (sender, e) => {
-			car.RealSpeed = e.RecommendedSpeed;
-			car.MapSpeed = car.RealSpeed / (double)_scale;
-			state.Text = $"Auto: {sender as Car} Silnice: {Enum.GetName(e.RoadType)} Rychlost: {car.RealSpeed} " +
-			$"Rychlost na mapě: {car.MapSpeed} Počasí: {e.Weather}°C Město: {e.Name}";
-		};
+		car.RoadChanged += (sender, e) => state.Text = $"Auto: {sender as Car} Silnice: {Enum.GetName(e.RoadType)} " +
+			$"Rychlost: {car.RealSpeed} Město: {e.Name}";
 
 		gpx.PreviewMouseDown += (sender, e) => {
 			_selected = _cars.First(x => x.id == (ulong)(sender as CarGPX).Tag);
@@ -96,7 +77,7 @@ public partial class Tab : Window {
 
 	private void WriteCarRoadTypeChanged(object sender, Car.RoadTypeEventArgs e) =>
 		state.Text = $"Auto - {sender as Car}{Environment.NewLine}" +
-		$"Poloha - Město: {e.Name} Počasí: {e.Weather}°C Doporučená rychlost: {e.RecommendedSpeed}";
+		$"Poloha - Město: {e.Name} Povolená rychlost: {e.AllowedSpeed}";
 
 	private void B_Left_Click(object sender, RoutedEventArgs e) {
 		foreach (UserControl item in roads)
@@ -140,18 +121,11 @@ public partial class Tab : Window {
 			car.Height = _carh / _scale;
 
 			car.Margin = new Thickness(car.Margin.Left / _scale, car.Margin.Top, car.Margin.Right, car.Margin.Bottom);
-			car.MapSpeed = (car.RealSpeed / (double)_scale);
 		}
 	}
 
 	private void InitCords() {
-		Process psi = Car.StartProcess("ggps");
-		psi.Start();
-
-		string s = "";
-
-		while (!psi.StandardOutput.EndOfStream)
-			s += psi.StandardOutput.ReadLine();
+		string s = Headquaters.commands["ggps"]("");
 
 		Array.ForEach(s.Replace("\n", "").Replace("\r", "").Replace("\t", "").Split(' '), x => cords.Add(new RoadWrapper(x)));
 	}

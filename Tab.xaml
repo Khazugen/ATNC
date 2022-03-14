@@ -8,7 +8,8 @@
         Title="MainWindow" Height="720" Width="1280"
         WindowState="Maximized">
     <Grid x:Name="gr">
-        <TextBox x:Name="state" Panel.ZIndex="9" Height="200" VerticalAlignment="Top" FontSize="15"/>
+        <Label x:Name="l_temp" Panel.ZIndex="9" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="15" Content="20°C"/>
+        <TextBox x:Name="state" Margin="30" Height="200" VerticalAlignment="Top" FontSize="15"/>
         <TextBox x:Name="tb_destination" Width="200" Panel.ZIndex="9" Height="30" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
         <Button Content="OK" Margin="200,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Height="30" Click="B_Direction_Click"/>
         <Button Margin="5, 200, 5, 5" Panel.ZIndex="9" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Left" Click="B_Left_Click"/>
