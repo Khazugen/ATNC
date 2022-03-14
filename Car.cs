@@ -185,7 +185,9 @@ internal class Car {
 	}
 
 	public override string ToString() =>
-		$"ID: {id}; Světla: {Enum.GetName(Lights)}; Destinace: {Destination}; Možná reálná rychlost: {RealSpeed}; Možná rychlost na mapě: {MapSpeed};{(_forceuntilcity ? " Auto jede do opravny; " : "")}" +
+		$"ID: {id}; Světla: {Enum.GetName(Lights)}; Destinace: {Destination}; " +
+		$"Možná reálná rychlost: {RealSpeed}; Možná rychlost na mapě: {MapSpeed};" +
+		$"{(_forceuntilcity ? " Auto jede do opravny; " : "")}" +
 		$"{(_forcestop ? $"Auto stojí po dobu {_delay} sekund " : "")}";
 
 	public class RoadTypeEventArgs : EventArgs {
