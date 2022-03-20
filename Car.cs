@@ -20,6 +20,7 @@ internal class Car {
 	private sbyte _weather;
 	private readonly DispatcherTimer _timer = new();
 	private readonly IEnumerable<RoadWrapper> _roads;
+	private const uint _speedscale = 3u;
 
 	public string Destination {
 		get => _destination;
@@ -67,7 +68,7 @@ internal class Car {
 		if (!_active || _skip)
 			return;
 
-		double adv = _forceuntilcity ? RealSpeed / Tab.speedscale * (_back ? -1d : 1d) / 2 : (RealSpeed / Tab.speedscale * (_back ? -1d : 1d));
+		double adv = _forceuntilcity ? RealSpeed / _speedscale * (_back ? -1d : 1d) / 2 : (RealSpeed / _speedscale * (_back ? -1d : 1d));
 
 		if (_weather is <= 10 and > 0)
 			adv /= 1.5d;

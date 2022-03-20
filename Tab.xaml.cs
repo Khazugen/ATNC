@@ -18,7 +18,7 @@ public partial class Tab : Window {
 	private readonly List<Car> _cars = new();
 	private readonly List<CarGPX> _cargpxs = new();
 	private readonly DispatcherTimer _cartimer = new();
-	public const uint scale = 20u, speedscale = 3u;
+	public const uint scale = 20u;
 	private Car _selected;
 
 	public Tab() {
