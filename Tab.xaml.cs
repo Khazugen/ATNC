@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,23 +8,17 @@ using System.Windows.Threading;
 namespace ATNC;
 
 public partial class Tab : Window {
-	private enum Direction { Left, Right, Up, Down }
-
 	public readonly List<RoadWrapper> cords = new();
 	public readonly List<UserControl> roads = new();
 	private const double _advance = 50d;
 	private const double _carh = 100;
 	private const double _carw = 200;
-	private static readonly Dictionary<Direction, Func<Thickness, Thickness>> _dirs = new() {
-		{ Direction.Left, (item) => new Thickness(item.Left - _advance, item.Top, item.Right, item.Bottom) },
-		{ Direction.Right, (item) => new Thickness(item.Left + _advance, item.Top, item.Right, item.Bottom) },
-		{ Direction.Up, (item) => new Thickness(item.Left, item.Top - _advance, item.Right, item.Bottom) },
-		{ Direction.Down, (item) => new Thickness(item.Left, item.Top + _advance, item.Right, item.Bottom) }
-	};
 
+	private double _xadvance;
 	private readonly List<Car> _cars = new();
+	private readonly List<CarGPX> _cargpxs = new();
 	private readonly DispatcherTimer _cartimer = new();
-	private const uint _scale = 20u;
+	public const uint scale = 20u, speedscale = 3u;
 	private Car _selected;
 
 	public Tab() {
@@ -33,46 +26,54 @@ public partial class Tab : Window {
 		InitializeComponent();
 		DrawGPS();
 
-		_cartimer.Interval = new System.TimeSpan(0, 0, 0, 0, 10);
+		_cartimer.Interval = new TimeSpan(0, 0, 0, 0, 10);
 		_cartimer.Start();
-		_cartimer.Tick += (sender, e) => _cars.ForEach(x => x.Drive());
+		_cartimer.Tick += (sender, e) => {
+			for (int i = 0; i < _cars.Count; ++i) {
+				_cars[i].Drive();
+				_cargpxs[i].Margin = new Thickness(_xadvance + (_cars[i].X / scale), _cargpxs[i].Margin.Top, _cargpxs[i].Margin.Right, _cargpxs[i].Margin.Bottom);
+			}
+		};
+
 		Headquaters.MeteoStation.WeatherChanged += (e) => l_temp.Content = $"{e.Weather}°C";
 	}
 
 	private void B_Add_Car_Click(object sender, RoutedEventArgs e) {
-		CarGPX gpx = new() {
-			Name = "car",
-			HorizontalAlignment = HorizontalAlignment.Left,
-			VerticalAlignment = VerticalAlignment.Center,
-			RenderTransformOrigin = new Point(0.5d, 0.5d)
-		};
-
-		gr.Children.Add(gpx);
-		Panel.SetZIndex(gpx, 9);
-
-		Car car = new(gpx) {
+		Car car = new(cords) {
 			RealSpeed = 50,
-			Margin = new Thickness(0, 0, 0, 0),
-			Width = _carw / _scale,
-			Height = _carh / _scale
+			Width = _carw / scale,
+			Height = _carh / scale
 		};
-
-		gpx.Tag = car.id;
 
 		_cars.Add(car);
 
 		car.RoadChanged += (sender, e) => state.Text = $"Auto: {sender as Car} Silnice: {Enum.GetName(e.RoadType)} " +
 			$"Rychlost: {car.RealSpeed} Město: {e.Name}";
 
+		CarGPX gpx = new() {
+			Name = "car",
+			HorizontalAlignment = HorizontalAlignment.Left,
+			VerticalAlignment = VerticalAlignment.Center,
+			RenderTransformOrigin = new Point(0.5d, 0.5d),
+			Width = car.Width,
+			Height = car.Height
+		};
+
+		gr.Children.Add(gpx);
+		Panel.SetZIndex(gpx, 9);
+
+		gpx.Tag = car.id;
+
 		gpx.PreviewMouseDown += (sender, e) => {
 			_selected = _cars.First(x => x.id == (ulong)(sender as CarGPX).Tag);
 			state.Text = _selected.ToString();
 
-			foreach(Car item in _cars)
+			foreach (Car item in _cars)
 				item.RoadChanged -= WriteCarRoadTypeChanged;
 
 			_selected.RoadChanged += WriteCarRoadTypeChanged;
 		};
+		_cargpxs.Add(gpx);
 	}
 
 	private void WriteCarRoadTypeChanged(object sender, Car.RoadTypeEventArgs e) =>
@@ -81,18 +82,18 @@ public partial class Tab : Window {
 
 	private void B_Left_Click(object sender, RoutedEventArgs e) {
 		foreach (UserControl item in roads)
-			item.Margin = _dirs[Direction.Left](item.Margin);
+			item.Margin = new Thickness(item.Margin.Left - _advance, item.Margin.Top, item.Margin.Right, item.Margin.Bottom);
 
 		foreach (Car item in _cars)
-			item.Margin = _dirs[Direction.Left](item.Margin);
+			_xadvance -= _advance;
 	}
 
 	private void B_Right_Click(object sender, RoutedEventArgs e) {
 		foreach (UserControl item in roads)
-			item.Margin = _dirs[Direction.Right](item.Margin);
+			item.Margin = new Thickness(item.Margin.Left + _advance, item.Margin.Top, item.Margin.Right, item.Margin.Bottom);
 
 		foreach (Car item in _cars)
-			item.Margin = _dirs[Direction.Right](item.Margin);
+			_xadvance += _advance;
 	}
 
 	private void DrawGPS() {
@@ -101,9 +102,9 @@ public partial class Tab : Window {
 
 			c.HorizontalAlignment = HorizontalAlignment.Left;
 			c.VerticalAlignment = VerticalAlignment.Center;
-			c.Width = item.w / _scale;
-			c.Height = item.h / _scale;
-			c.Margin = new(item.x / _scale, 0, 0, 0);
+			c.Width = item.w / scale;
+			c.Height = item.h / scale;
+			c.Margin = new(item.x / scale, 0, 0, 0);
 
 			c.Tag = item;
 
@@ -113,19 +114,13 @@ public partial class Tab : Window {
 		}
 
 		foreach (Car car in _cars) {
-			if (car.Width != _carw && car.Height != _carh) {
-				car.Margin = new Thickness(car.Margin.Left * _scale, car.Margin.Top, car.Margin.Right, car.Margin.Bottom);
-			}
-
-			car.Width = _carw / _scale;
-			car.Height = _carh / _scale;
-
-			car.Margin = new Thickness(car.Margin.Left / _scale, car.Margin.Top, car.Margin.Right, car.Margin.Bottom);
+			car.Width = _carw / scale;
+			car.Height = _carh / scale;
 		}
 	}
 
 	private void InitCords() {
-		string s = Headquaters.commands["ggps"]("");
+		string s = Headquaters.GetGPS();
 
 		Array.ForEach(s.Replace("\n", "").Replace("\r", "").Replace("\t", "").Split(' '), x => cords.Add(new RoadWrapper(x)));
 	}
